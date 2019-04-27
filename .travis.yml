@@ -1,0 +1,20 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t mchandwa/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run mchandwa/react-test npm test -- --coverage
+
+after_success:
+  - docker build -t mchandwa/multi-client ./client
+  - docker build -t mchandwa/multi-nginx ./nginx
+  - docker build -t mchandwa/multi-worker ./worker
+  - docker build -t mchandwa/multi-server ./server
+  - echo "$DOCKER_PASSWORD" | docker login -u  "$DOCKER_ID" --password--stdin
+  - docker push mchandwa/multi-client
+  - docker push mchandwa/multi-nginx
+  - docker push mchandwa/multi-worker
+  - docker push mchandwa/multi-server
